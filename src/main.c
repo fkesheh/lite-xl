@@ -40,7 +40,7 @@ static void get_exe_filename(char *buf, int sz) {
     buf[len] = '\0';
 #elif SDL_PLATFORM_APPLE
   /* use realpath to resolve a symlink if the process was launched from one.
-  ** This happens when Homebrew installs a cack and creates a symlink in
+  ** This happens when Homebrew installs a cask and creates a symlink in
   ** /usr/loca/bin for launching the executable from the command line. */
   unsigned size = sz;
   char exepath[size];
