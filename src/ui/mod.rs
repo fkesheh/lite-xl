@@ -6,11 +6,23 @@ pub mod editor_view;
 pub mod gutter;
 pub mod statusbar;
 pub mod theme;
+pub mod terminal_canvas;
+pub mod terminal_panel;
+pub mod terminal_tabs;
 
 pub use editor_view::editor_view;
 pub use gutter::gutter_view;
 pub use statusbar::statusbar_view;
 pub use theme::{FontConfig, Theme};
+pub use terminal_canvas::{
+    terminal_canvas_view, TerminalCell, TerminalCursor, TerminalCursorStyle, TerminalGrid,
+    get_selected_text, key_event_to_terminal_sequence,
+};
+pub use terminal_panel::{
+    create_terminal_panel, terminal_panel_view, DockPosition, TerminalPanelState,
+    handle_terminal_shortcuts,
+};
+pub use terminal_tabs::{terminal_tab_bar_view, TabManager, TerminalTab};
 
 use floem::{
     reactive::{RwSignal, SignalGet},

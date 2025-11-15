@@ -1,0 +1,381 @@
+═══════════════════════════════════════════════════════════════════════════════
+                    TERMINAL UI COMPONENTS ARCHITECTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            Application Window                                │
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                         Main Editor Area                                │ │
+│  │                                                                         │ │
+│  │  ┌──────────────────────────────────────────────────────────────────┐  │ │
+│  │  │ EditorView                                                       │  │ │
+│  │  │ (existing component)                                             │  │ │
+│  │  │                                                                  │  │ │
+│  │  └──────────────────────────────────────────────────────────────────┘  │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │ ┌─ TerminalPanelView ─────────────────────────────────────────────────┐│ │
+│  │ │                                                                      ││ │
+│  │ │ ┌─ Header ──────────────────────────────────────────────────────┐  ││ │
+│  │ │ │                                                               │  ││ │
+│  │ │ │ ┌─ TabBar ────────────────────────────────┐ ┌─ Controls ───┐ │  ││ │
+│  │ │ │ │ ┏━━━━━━━━━━━━━┓ ┏━━━━━━━━━━━┓ ┏━━━━━┓  │ │ ┏━━━┓ ┏━━━┓ │ │  ││ │
+│  │ │ │ │ ┃ Terminal 1 ┃ ┃ Terminal 2┃ ┃  +  ┃  │ │ ┃ ⊟ ┃ ┃ × ┃ │ │  ││ │
+│  │ │ │ │ ┗━━━━━━━━━━━━━┛ ┗━━━━━━━━━━━┛ ┗━━━━━┛  │ │ ┗━━━┛ ┗━━━┛ │ │  ││ │
+│  │ │ │ │   Active         Inactive      Add Tab │ │  Pos   Close │ │  ││ │
+│  │ │ │ └─────────────────────────────────────────┘ └──────────────┘ │  ││ │
+│  │ │ └───────────────────────────────────────────────────────────────┘  ││ │
+│  │ │                                                                      ││ │
+│  │ │ ┌─ TerminalCanvas ─────────────────────────────────────────────┐   ││ │
+│  │ │ │                                                               │   ││ │
+│  │ │ │ ┌─ Grid (TerminalGrid: 80×24) ────────────────────────────┐  │   ││ │
+│  │ │ │ │                                                          │  │   ││ │
+│  │ │ │ │  $ ls -la                                               │  │   ││ │
+│  │ │ │ │  total 64                                               │  │   ││ │
+│  │ │ │ │  drwxr-xr-x  5 user  staff  160 Nov 15 10:30 .          │  │   ││ │
+│  │ │ │ │  -rw-r--r--  1 user  staff 1234 Nov 15 09:15 README.md  │  │   ││ │
+│  │ │ │ │  -rw-r--r--  1 user  staff  567 Nov 15 09:20 main.rs    │  │   ││ │
+│  │ │ │ │  drwxr-xr-x  8 user  staff  256 Nov 15 10:00 src         │  │   ││ │
+│  │ │ │ │  █                                                       │  │   ││ │
+│  │ │ │ │  ▔                                                       │  │   ││ │
+│  │ │ │ │                                                          │  │   ││ │
+│  │ │ │ │  Each cell: TerminalCell {                              │  │   ││ │
+│  │ │ │ │    ch: char,        // Character                        │  │   ││ │
+│  │ │ │ │    fg: Color,       // Foreground color                 │  │   ││ │
+│  │ │ │ │    bg: Color,       // Background color                 │  │   ││ │
+│  │ │ │ │    bold: bool,      // Attributes                       │  │   ││ │
+│  │ │ │ │    italic: bool,                                        │  │   ││ │
+│  │ │ │ │    underline: bool,                                     │  │   ││ │
+│  │ │ │ │    reverse: bool,                                       │  │   ││ │
+│  │ │ │ │  }                                                       │  │   ││ │
+│  │ │ │ │                                                          │  │   ││ │
+│  │ │ │ └──────────────────────────────────────────────────────────┘  │   ││ │
+│  │ │ │                                                               │   ││ │
+│  │ │ │ Features:                                                     │   ││ │
+│  │ │ │ • Cell rendering with RGB colors                             │   ││ │
+│  │ │ │ • Mouse selection (click & drag)                             │   ││ │
+│  │ │ │ • Keyboard input → terminal sequences                        │   ││ │
+│  │ │ │ • Cursor styles: Block | Underline | Bar                     │   ││ │
+│  │ │ │ • Font metrics alignment                                     │   ││ │
+│  │ │ └───────────────────────────────────────────────────────────────┘   ││ │
+│  │ └──────────────────────────────────────────────────────────────────────┘│ │
+│  │                                                                          │ │
+│  │  ═══ Resize Handle (drag to resize) ═══                                 │ │
+│  │                                                                          │ │
+│  │  Dock Positions:                                                        │ │
+│  │  • Bottom (default) - Full width, adjustable height                     │ │
+│  │  • Left - Full height, adjustable width                                 │ │
+│  │  • Right - Full height, adjustable width                                │ │
+│  └──────────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                              DATA FLOW DIAGRAM
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────┐                    ┌──────────────────┐
+│   User      │ Keyboard/Mouse     │  Floem Event     │
+│   Input     │───────────────────>│   System         │
+└─────────────┘                    └──────────────────┘
+                                            │
+                                            ▼
+                    ┌───────────────────────────────────────────┐
+                    │   Terminal Canvas Event Handlers          │
+                    │   • KeyDown → key_event_to_terminal_seq() │
+                    │   • PointerDown → Start selection         │
+                    │   • PointerMove → Update selection        │
+                    │   • PointerUp → End selection             │
+                    └───────────────────────────────────────────┘
+                                            │
+                                            ▼
+                    ┌───────────────────────────────────────────┐
+                    │   on_input(bytes: Vec<u8>)                │
+                    │   Callback to send input to PTY           │
+                    └───────────────────────────────────────────┘
+                                            │
+                                            ▼
+                    ┌───────────────────────────────────────────┐
+                    │   PTY Backend (Future Integration)        │
+                    │   • Receives input bytes                  │
+                    │   • Processes commands                    │
+                    │   • Generates output                      │
+                    └───────────────────────────────────────────┘
+                                            │
+                                            ▼
+                    ┌───────────────────────────────────────────┐
+                    │   ANSI Parser (Future Integration)        │
+                    │   • Parse ANSI escape sequences           │
+                    │   • Extract colors, formatting            │
+                    │   • Convert to TerminalCell updates       │
+                    └───────────────────────────────────────────┘
+                                            │
+                                            ▼
+                    ┌───────────────────────────────────────────┐
+                    │   RwSignal<TerminalGrid>                  │
+                    │   Reactive state updates                  │
+                    └───────────────────────────────────────────┘
+                                            │
+                                            ▼
+                    ┌───────────────────────────────────────────┐
+                    │   Floem Reactive System                   │
+                    │   Detects state changes                   │
+                    └───────────────────────────────────────────┘
+                                            │
+                                            ▼
+                    ┌───────────────────────────────────────────┐
+                    │   View Re-render                          │
+                    │   Only affected cells update              │
+                    └───────────────────────────────────────────┘
+                                            │
+                                            ▼
+                    ┌───────────────────────────────────────────┐
+                    │   Screen Update                           │
+                    │   60 FPS smooth rendering                 │
+                    └───────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                           STATE MANAGEMENT TREE
+═══════════════════════════════════════════════════════════════════════════════
+
+RwSignal<TerminalPanelState>
+│
+├─ visible: bool                    // Panel visibility
+├─ position: DockPosition           // Bottom | Left | Right
+├─ size: f64                        // Panel size in pixels
+├─ min_size: f64                    // Minimum size constraint
+├─ max_size_fraction: f64           // Maximum size as fraction (0.8)
+├─ is_resizing: bool                // Currently being resized
+│
+└─ tab_manager: TabManager
+   │
+   ├─ tabs: Vec<TerminalTab>
+   │  │
+   │  ├─ TerminalTab[0]              // First terminal
+   │  │  ├─ id: 0
+   │  │  ├─ title: "Terminal 1"
+   │  │  ├─ active: true
+   │  │  ├─ working_dir: "~"
+   │  │  ├─ is_busy: false
+   │  │  │
+   │  │  └─ grid: TerminalGrid
+   │  │     ├─ cols: 80
+   │  │     ├─ rows: 24
+   │  │     ├─ cells: Vec<Vec<TerminalCell>>   // 80×24 grid
+   │  │     │  └─ cells[row][col]: TerminalCell
+   │  │     │     ├─ ch: char                   // Display character
+   │  │     │     ├─ fg: Color                  // RGB foreground
+   │  │     │     ├─ bg: Color                  // RGB background
+   │  │     │     ├─ bold: bool                 // Styling flags
+   │  │     │     ├─ italic: bool
+   │  │     │     ├─ underline: bool
+   │  │     │     └─ reverse: bool
+   │  │     │
+   │  │     ├─ cursor: TerminalCursor
+   │  │     │  ├─ row: usize
+   │  │     │  ├─ col: usize
+   │  │     │  ├─ visible: bool
+   │  │     │  └─ style: Block | Underline | Bar
+   │  │     │
+   │  │     ├─ selection: Option<(row1, col1, row2, col2)>
+   │  │     └─ scroll_offset: usize
+   │  │
+   │  ├─ TerminalTab[1]              // Second terminal
+   │  │  └─ ...
+   │  │
+   │  └─ TerminalTab[n]              // Nth terminal
+   │     └─ ...
+   │
+   ├─ active_index: usize            // Currently active tab
+   └─ next_id: usize                 // ID counter for new tabs
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                        COMPONENT INTERACTION FLOW
+═══════════════════════════════════════════════════════════════════════════════
+
+User Actions:
+─────────────
+
+1. Toggle Terminal (Ctrl+`)
+   ┌──────────────────┐
+   │ handle_terminal_ │
+   │ shortcuts()      │──> panel_state.update(|s| s.toggle())
+   └──────────────────┘
+
+2. Add New Tab (Click + button or Ctrl+Shift+T)
+   ┌──────────────────┐
+   │ add_tab_button() │──> tab_manager.update(|m| m.add_tab(None))
+   └──────────────────┘
+
+3. Switch Tab (Click tab)
+   ┌──────────────────┐
+   │ tab_view()       │──> tab_manager.update(|m| m.switch_to_tab(idx))
+   └──────────────────┘
+
+4. Close Tab (Click × button)
+   ┌──────────────────┐
+   │ close_button()   │──> tab_manager.update(|m| m.close_tab(idx))
+   └──────────────────┘
+
+5. Resize Panel (Drag handle)
+   ┌──────────────────┐
+   │ resize_handle()  │──> panel_state.update(|s| s.resize(delta, size))
+   └──────────────────┘
+
+6. Change Position (Click ⊟ button)
+   ┌──────────────────┐
+   │ control_button() │──> panel_state.update(|s| s.set_position(next))
+   └──────────────────┘
+
+7. Type in Terminal
+   ┌──────────────────┐
+   │ terminal_canvas_ │──> key_event_to_terminal_sequence()
+   │ view()           │──> on_input(bytes)
+   └──────────────────┘──> [PTY Backend]
+
+8. Select Text (Click & drag)
+   ┌──────────────────┐
+   │ PointerDown      │──> grid.update(|g| g.selection = Some(...))
+   │ PointerMove      │──> grid.update(|g| update selection)
+   │ PointerUp        │──> End selection
+   └──────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                            FILE STRUCTURE MAP
+═══════════════════════════════════════════════════════════════════════════════
+
+lite-xl/
+├── src/
+│   └── ui/
+│       ├── mod.rs                      [UPDATED]
+│       │   └── Exports terminal components
+│       │
+│       ├── terminal_canvas.rs          [NEW - 538 lines]
+│       │   ├── TerminalCell
+│       │   ├── TerminalCursor
+│       │   ├── TerminalCursorStyle
+│       │   ├── TerminalGrid
+│       │   ├── terminal_canvas_view()
+│       │   ├── key_event_to_terminal_sequence()
+│       │   └── get_selected_text()
+│       │
+│       ├── terminal_tabs.rs            [NEW - 454 lines]
+│       │   ├── TerminalTab
+│       │   ├── TabManager
+│       │   ├── terminal_tab_bar_view()
+│       │   ├── tab_view()
+│       │   └── Helper functions
+│       │
+│       └── terminal_panel.rs           [NEW - 566 lines]
+│           ├── DockPosition
+│           ├── TerminalPanelState
+│           ├── terminal_panel_view()
+│           ├── create_terminal_panel()
+│           └── handle_terminal_shortcuts()
+│
+├── examples/
+│   └── terminal_ui_demo.rs             [NEW - 162 lines]
+│       └── Interactive demonstration
+│
+├── docs/
+│   ├── TERMINAL_UI.md                  [NEW - 536 lines]
+│   │   └── Complete API documentation
+│   │
+│   ├── TERMINAL_INTEGRATION.md         [NEW - 416 lines]
+│   │   └── Integration guide
+│   │
+│   └── TERMINAL_UI_ARCHITECTURE.txt    [NEW - This file]
+│       └── Visual architecture diagrams
+│
+└── TERMINAL_UI_IMPLEMENTATION.md       [NEW - 425 lines]
+    └── Implementation summary
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                          KEYBOARD SHORTCUTS MAP
+═══════════════════════════════════════════════════════════════════════════════
+
+Global Shortcuts (handled by handle_terminal_shortcuts):
+┌────────────────┬───────────────────────────────────────────────────────────┐
+│   Shortcut     │   Action                                                  │
+├────────────────┼───────────────────────────────────────────────────────────┤
+│ Ctrl + `       │ Toggle terminal panel visibility                          │
+│ Ctrl+Shift+T   │ Create new terminal tab (and show panel)                  │
+│ Ctrl+Shift+W   │ Close current terminal tab                                │
+│ Ctrl + Tab     │ Switch to next terminal tab                               │
+└────────────────┴───────────────────────────────────────────────────────────┘
+
+Terminal Input (converted to sequences):
+┌────────────────┬───────────────────────────────────────────────────────────┐
+│   Key          │   Sequence                                                │
+├────────────────┼───────────────────────────────────────────────────────────┤
+│ Enter          │ \r (0x0D)                                                 │
+│ Tab            │ \t (0x09)                                                 │
+│ Backspace      │ \x7f (DEL)                                                │
+│ Escape         │ \x1b (ESC)                                                │
+│ Arrow Up       │ \x1b[A                                                    │
+│ Arrow Down     │ \x1b[B                                                    │
+│ Arrow Right    │ \x1b[C                                                    │
+│ Arrow Left     │ \x1b[D                                                    │
+│ Home           │ \x1b[H                                                    │
+│ End            │ \x1b[F                                                    │
+│ Page Up        │ \x1b[5~                                                   │
+│ Page Down      │ \x1b[6~                                                   │
+│ Delete         │ \x1b[3~                                                   │
+│ Insert         │ \x1b[2~                                                   │
+│ Ctrl + A-Z     │ 0x01-0x1A (control codes)                                 │
+│ Regular chars  │ UTF-8 bytes                                               │
+└────────────────┴───────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                           INTEGRATION CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+Phase 1: Basic Integration [Current State]
+┌───┬─────────────────────────────────────────────────────────────────┬────────┐
+│ ✅ │ Terminal UI components implemented                              │  DONE  │
+│ ✅ │ Theme integration                                               │  DONE  │
+│ ✅ │ Font configuration support                                      │  DONE  │
+│ ✅ │ Reactive state management                                       │  DONE  │
+│ ✅ │ Documentation and examples                                      │  DONE  │
+│ ✅ │ Unit tests                                                      │  DONE  │
+└───┴─────────────────────────────────────────────────────────────────┴────────┘
+
+Phase 2: PTY Integration [Next Steps]
+┌───┬─────────────────────────────────────────────────────────────────┬────────┐
+│ ⏸ │ Add portable-pty dependency                                     │  TODO  │
+│ ⏸ │ Create PTY backend wrapper                                      │  TODO  │
+│ ⏸ │ Connect on_input callback to PTY                                │  TODO  │
+│ ⏸ │ Process PTY output → grid updates                               │  TODO  │
+│ ⏸ │ Handle PTY lifecycle (spawn, resize, close)                     │  TODO  │
+└───┴─────────────────────────────────────────────────────────────────┴────────┘
+
+Phase 3: ANSI Parser [Future]
+┌───┬─────────────────────────────────────────────────────────────────┬────────┐
+│ ⏸ │ Add VTE parser dependency                                       │  TODO  │
+│ ⏸ │ Implement ANSI escape sequence parser                           │  TODO  │
+│ ⏸ │ Support 256-color and true color                                │  TODO  │
+│ ⏸ │ Handle cursor movement sequences                                │  TODO  │
+│ ⏸ │ Implement scrolling regions                                     │  TODO  │
+└───┴─────────────────────────────────────────────────────────────────┴────────┘
+
+Phase 4: Advanced Features [Future]
+┌───┬─────────────────────────────────────────────────────────────────┬────────┐
+│ ⏸ │ Scrollback buffer UI                                            │  TODO  │
+│ ⏸ │ Clipboard integration                                           │  TODO  │
+│ ⏸ │ Link detection and click handling                               │  TODO  │
+│ ⏸ │ Search in terminal                                              │  TODO  │
+│ ⏸ │ Split terminal views                                            │  TODO  │
+│ ⏸ │ Custom color schemes                                            │  TODO  │
+└───┴─────────────────────────────────────────────────────────────────┴────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                              END OF DIAGRAM
+═══════════════════════════════════════════════════════════════════════════════

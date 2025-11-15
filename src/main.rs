@@ -12,9 +12,14 @@ use floem::{
 };
 
 use editor::EditorState;
+use lite_xl::{create_terminal_manager, TerminalConfig, SharedTerminalManager};
 use ui::{app_view, FontConfig, Theme};
 
 fn main() {
+    // Create terminal manager (for future integration)
+    let terminal_config = TerminalConfig::default();
+    let _terminal_manager: SharedTerminalManager = create_terminal_manager(terminal_config);
+
     // Create application state
     let initial_text = r#"// Welcome to Lite XL!
 // A fast, lightweight text editor built with Rust and Floem

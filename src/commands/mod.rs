@@ -310,8 +310,45 @@ pub enum Command {
     /// Show file picker
     ShowFilePicker,
 
-    /// Open terminal
+    /// Open terminal (deprecated - use Terminal commands instead)
     OpenTerminal,
+
+    // ===== Terminal Operations =====
+    /// Create new terminal
+    TerminalNew,
+
+    /// Close current terminal
+    TerminalClose,
+
+    /// Close all terminals
+    TerminalCloseAll,
+
+    /// Switch to next terminal
+    TerminalNext,
+
+    /// Switch to previous terminal
+    TerminalPrevious,
+
+    /// Switch to terminal by index (1-based)
+    TerminalSwitchTo(usize),
+
+    /// Toggle terminal panel visibility
+    TerminalToggle,
+
+    /// Show terminal panel
+    TerminalShow,
+
+    /// Hide terminal panel
+    TerminalHide,
+
+    /// Clear current terminal
+    TerminalClear,
+
+    /// Kill current terminal process
+    TerminalKill,
+
+    /// Send input to terminal
+    TerminalInput(String),
 
     // ===== Custom Commands =====
     /// Custom command for plugins/extensions
@@ -519,6 +556,18 @@ impl Command {
             Command::ShowCommandPalette => "Show Command Palette",
             Command::ShowFilePicker => "Show File Picker",
             Command::OpenTerminal => "Open Terminal",
+            Command::TerminalNew => "New Terminal",
+            Command::TerminalClose => "Close Terminal",
+            Command::TerminalCloseAll => "Close All Terminals",
+            Command::TerminalNext => "Next Terminal",
+            Command::TerminalPrevious => "Previous Terminal",
+            Command::TerminalSwitchTo(_) => "Switch to Terminal",
+            Command::TerminalToggle => "Toggle Terminal Panel",
+            Command::TerminalShow => "Show Terminal Panel",
+            Command::TerminalHide => "Hide Terminal Panel",
+            Command::TerminalClear => "Clear Terminal",
+            Command::TerminalKill => "Kill Terminal Process",
+            Command::TerminalInput(_) => "Send Input to Terminal",
             Command::Custom { .. } => "Custom Command",
             Command::Noop => "No Operation",
         }
@@ -839,6 +888,17 @@ impl KeyMap {
         // System
         self.bind(Key::Char('p'), Modifiers::ctrl_shift(), Command::ShowCommandPalette);
         self.bind(Key::Char('p'), Modifiers::ctrl(), Command::ShowFilePicker);
+
+        // Terminal (backtick/grave accent is represented as '`')
+        self.bind(Key::Char('`'), Modifiers::ctrl(), Command::TerminalToggle);
+        self.bind(Key::Char('t'), Modifiers::ctrl_shift(), Command::TerminalNew);
+        self.bind(Key::Char('w'), Modifiers::ctrl_shift(), Command::TerminalClose);
+        self.bind(Key::Char('1'), Modifiers::alt(), Command::TerminalSwitchTo(1));
+        self.bind(Key::Char('2'), Modifiers::alt(), Command::TerminalSwitchTo(2));
+        self.bind(Key::Char('3'), Modifiers::alt(), Command::TerminalSwitchTo(3));
+        self.bind(Key::Char('4'), Modifiers::alt(), Command::TerminalSwitchTo(4));
+        self.bind(Key::Char('5'), Modifiers::alt(), Command::TerminalSwitchTo(5));
+        self.bind(Key::Char('k'), Modifiers::ctrl_shift(), Command::TerminalClear);
     }
 }
 

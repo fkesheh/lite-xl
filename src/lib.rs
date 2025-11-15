@@ -90,16 +90,33 @@
 pub mod buffer;
 pub mod clipboard;
 pub mod commands;
+pub mod config;
 pub mod document;
 pub mod events;
+pub mod terminal;
 pub mod undo;
 
 // Re-export commonly used types
 pub use buffer::{Buffer, BufferId, LineEnding, Position, Range};
 pub use clipboard::{Clipboard, ClipboardContext};
 pub use commands::{Command, Key, KeyBinding, KeyMap, Modifiers, Movement as CommandMovement};
+pub use config::{Config, EditorConfig, KeymapConfig, LanguageConfig, UiConfig};
 pub use document::{Document, DocumentSettings, Movement, Selection, Selections};
 pub use events::{EditorEvent, EventDispatcher, EventHandler, KeyEvent, MouseEvent};
+pub use terminal::{
+    // Backend types
+    detect_available_shells, ShellConfig, ShellType, TerminalBackend,
+    // Buffer types
+    Attributes as TerminalAttributes, Cell as TerminalCell, Color as TerminalColor,
+    Cursor as TerminalCursor, CursorShape, Grid as TerminalGrid,
+    Scrollback, TerminalBuffer,
+    // Manager types
+    TerminalCommand, TerminalConfig, TerminalId, TerminalManager,
+    SharedTerminalManager, create_terminal_manager,
+};
+
+#[cfg(feature = "pty")]
+pub use terminal::{Pty, PtyError, PtyResult};
 pub use undo::{Edit, UndoConfig, UndoStack};
 
 /// Library version

@@ -7,6 +7,7 @@
 //! - Runtime configuration updates
 //! - Configuration validation
 
+use crate::terminal::config::TerminalConfig;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -47,6 +48,10 @@ pub struct Config {
     #[serde(default)]
     pub keymap: KeymapConfig,
 
+    /// Terminal settings
+    #[serde(default)]
+    pub terminal: TerminalConfig,
+
     /// Language-specific settings
     #[serde(default)]
     pub languages: HashMap<String, LanguageConfig>,
@@ -58,6 +63,7 @@ impl Default for Config {
             editor: EditorConfig::default(),
             ui: UiConfig::default(),
             keymap: KeymapConfig::default(),
+            terminal: TerminalConfig::default(),
             languages: Self::default_languages(),
         }
     }
